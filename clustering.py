@@ -51,7 +51,7 @@ def run_clustering(df):
 
 
 def get_cluster_colors(df):
-    """Menghasilkan warna konsisten untuk setiap cluster."""
+    """Menghasilkan warna konsisten untuk setiap cluster sebagai dictionary."""
     unique_clusters = sorted(df["cluster"].unique())
     cmap = cm.get_cmap("tab10", len(unique_clusters))
 
@@ -60,5 +60,4 @@ def get_cluster_colors(df):
         for i, cluster in enumerate(unique_clusters)
     }
 
-    # Mengembalikan list warna sesuai setiap baris cluster
-    return df["cluster"].map(color_map)
+    return color_map
