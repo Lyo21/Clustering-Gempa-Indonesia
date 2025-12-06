@@ -6,35 +6,27 @@ from sklearn.metrics import silhouette_score
 import matplotlib.cm as cm
 import matplotlib.colors as mcolors
 
-
 def run_clustering(df):
-    """
-    Jalankan clustering otomatis untuk data gempa.
-    Output:
-      - df_clustered: DataFrame dengan kolom 'cluster'
-      - best_k: jumlah cluster terbaik
-      - best_score: nilai silhouette terbaik
-      - sil_scores: list skor silhouette untuk tiap k
-      - k_range: list k yang diuji
-    """
-
-    # Pastikan kolom yang dibutuhkan ada
     required_cols = ["latitude", "longitude", "depth", "magnitude"]
     for col in required_cols:
         if col not in df.columns:
             raise ValueError(f"Kolom '{col}' tidak ditemukan di dataset!")
 
-    # Ambil hanya kolom numerik untuk clustering
+    # CLEANING DATA
+    df = df.copy()
+    df = df.replace([np.inf, -np.inf], np.nan)
+    df = df.dropna(subset=required_cols)  
+
+    # AMBIL DATA UNTUK CLUSTERING
     X = df[required_cols].copy()
 
-    # Normalisasi (biar tiap fitur seimbang)
+    # SCALING
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(X)
 
-    # Uji berbagai jumlah cluster
+    # CARI JUMLAH CLUSTER TERBAIK
     k_range = range(2, 9)
     sil_scores = []
-
     best_score = -1
     best_k = 2
     best_labels = None
@@ -50,25 +42,8 @@ def run_clustering(df):
             best_k = k
             best_labels = labels
 
-    # Simpan hasil terbaik
+    # SIMPAN HASIL    
     df_clustered = df.copy()
     df_clustered["cluster"] = best_labels
 
     return df_clustered, best_k, best_score, sil_scores, k_range
-
-
-def get_cluster_colors(df):
-    """
-    Menghasilkan dictionary warna HEX untuk tiap cluster berdasarkan jumlah cluster.
-    Warna ini akan digunakan seragam di semua visualisasi.
-    """
-    cluster_ids = sorted(df["cluster"].unique())
-    num_clusters = len(cluster_ids)
-
-    cmap = cm.get_cmap("tab10", num_clusters)
-    colors = {
-        cluster_id: mcolors.to_hex(cmap(i))
-        for i, cluster_id in enumerate(cluster_ids)
-    }
-
-    return colors
