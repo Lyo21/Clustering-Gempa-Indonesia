@@ -6,6 +6,7 @@ from sklearn.metrics import silhouette_score
 import matplotlib.cm as cm
 import matplotlib.colors as mcolors
 
+
 def run_clustering(df):
     required_cols = ["latitude", "longitude", "depth", "magnitude"]
     for col in required_cols:
@@ -15,16 +16,16 @@ def run_clustering(df):
     # CLEANING DATA
     df = df.copy()
     df = df.replace([np.inf, -np.inf], np.nan)
-    df = df.dropna(subset=required_cols)  
+    df = df.dropna(subset=required_cols)
 
-    # AMBIL DATA UNTUK CLUSTERING
+    # DATA UNTUK CLUSTERING
     X = df[required_cols].copy()
 
     # SCALING
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(X)
 
-    # CARI JUMLAH CLUSTER TERBAIK
+    # MENCARI JUMLAH KLASTER TERBAIK
     k_range = range(2, 9)
     sil_scores = []
     best_score = -1
@@ -42,8 +43,22 @@ def run_clustering(df):
             best_k = k
             best_labels = labels
 
-    # SIMPAN HASIL    
+    # HASIL
     df_clustered = df.copy()
     df_clustered["cluster"] = best_labels
 
     return df_clustered, best_k, best_score, sil_scores, k_range
+
+
+def get_cluster_colors(df):
+    """Menghasilkan warna konsisten untuk setiap cluster."""
+    unique_clusters = sorted(df["cluster"].unique())
+    cmap = cm.get_cmap("tab10", len(unique_clusters))
+
+    color_map = {
+        cluster: mcolors.to_hex(cmap(i))
+        for i, cluster in enumerate(unique_clusters)
+    }
+
+    # Mengembalikan list warna sesuai setiap baris cluster
+    return df["cluster"].map(color_map)
