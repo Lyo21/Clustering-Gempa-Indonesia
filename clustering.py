@@ -31,7 +31,7 @@ def run_elbow(df):
     X_scaled = scaler.fit_transform(X)
 
     # ELBOW
-    k_range = range(2, 9)
+    k_range = range(2, 3)
     inertias = []
 
     for k in k_range:
@@ -70,7 +70,7 @@ def run_clustering(df):
     X_scaled = scaler.fit_transform(X)
 
     # RANGE K
-    k_range = range(2, 9)
+    k_range = range(2, 3)
     silhouette_scores = []
 
     best_score = -1
