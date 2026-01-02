@@ -40,6 +40,7 @@ def plot_silhouette(sil_scores, k_range):
 def plot_scatter(df, colors):
     """
     Membuat scatter plot hasil clustering berdasarkan Depth dan Magnitude.
+    Warna klaster mengikuti get_cluster_colors().
     """
     fig, ax = plt.subplots(figsize=(7, 5))
 
@@ -51,7 +52,7 @@ def plot_scatter(df, colors):
             label=f"Cluster {cluster_id}",
             color=color,
             alpha=0.7,
-            edgecolors="k",
+            edgecolors="black",
             linewidth=0.5
         )
 
@@ -67,17 +68,27 @@ def plot_scatter(df, colors):
 # --------------------------------------------------
 # 4️⃣ Bar Chart Jumlah Data per Klaster
 # --------------------------------------------------
-def plot_cluster_distribution(cluster_counts):
+def plot_cluster_distribution(cluster_counts, colors):
     """
-    Membuat bar chart jumlah data pada setiap klaster.
+    Membuat bar chart jumlah data pada setiap klaster
+    dengan warna yang konsisten dengan scatter & peta.
     """
     fig, ax = plt.subplots(figsize=(6, 4))
-    cluster_counts.plot(kind="bar", ax=ax)
+
+    # Warna bar mengikuti ID klaster
+    bar_colors = [colors[cluster_id] for cluster_id in cluster_counts.index]
+
+    cluster_counts.plot(
+        kind="bar",
+        ax=ax,
+        color=bar_colors,
+        edgecolor="black"
+    )
 
     ax.set_xlabel("Klaster")
     ax.set_ylabel("Jumlah Data Gempa")
     ax.set_title("Distribusi Jumlah Data pada Setiap Klaster")
-    ax.set_xticklabels(cluster_counts.index, rotation=0)  # <- biar ga miring
+    ax.set_xticklabels(cluster_counts.index, rotation=0)
     ax.grid(axis="y", linestyle="--", alpha=0.6)
 
     plt.tight_layout()
@@ -89,11 +100,13 @@ def plot_cluster_distribution(cluster_counts):
 # --------------------------------------------------
 def plot_map_static(df, colors):
     """
-    Membuat peta Indonesia dengan titik gempa sesuai cluster.
+    Membuat peta statis Indonesia dengan titik gempa
+    berwarna sesuai klaster.
     """
     world = gpd.read_file(
         "https://naturalearth.s3.amazonaws.com/110m_cultural/ne_110m_admin_0_countries.zip"
     )
+
     indonesia = (
         world[world["NAME"] == "Indonesia"]
         if "NAME" in world.columns
@@ -109,9 +122,9 @@ def plot_map_static(df, colors):
             cluster_data["longitude"],
             cluster_data["latitude"],
             label=f"Cluster {cluster_id}",
-            alpha=0.7,
             color=color,
-            edgecolors="k",
+            alpha=0.7,
+            edgecolors="black",
             linewidth=0.5,
             s=40
         )
@@ -121,5 +134,6 @@ def plot_map_static(df, colors):
     ax.set_ylabel("Latitude")
     ax.legend(title="Cluster")
     ax.grid(True, linestyle="--", alpha=0.5)
+
     plt.tight_layout()
     return fig

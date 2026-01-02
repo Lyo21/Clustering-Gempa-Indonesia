@@ -4,7 +4,7 @@ import pandas as pd
 from clustering import (
     run_clustering,
     get_cluster_colors,
-    run_elbow          # ⬅️ fungsi elbow
+    run_elbow
 )
 from visualization import (
     plot_elbow,
@@ -16,7 +16,6 @@ from visualization import (
 from mapping import plot_map_interactive
 
 
-# Konfigurasi Halaman
 st.set_page_config(
     page_title="Clustering Gempa Indonesia",
     layout="wide"
@@ -25,7 +24,6 @@ st.set_page_config(
 st.title("🔎 Analisis Clustering Gempa di Indonesia")
 
 
-# Upload Dataset
 uploaded_file = st.file_uploader(
     "Upload dataset gempa (TSV / CSV)",
     type=["csv", "tsv"]
@@ -40,7 +38,7 @@ if uploaded_file:
 
         st.success("✅ Dataset berhasil dimuat!")
 
-        # ELBOW METHOD
+        # Elbow
         inertias, k_elbow = run_elbow(df)
 
         st.subheader("📌 Penentuan Jumlah Klaster (Metode Elbow)")
@@ -56,7 +54,7 @@ if uploaded_file:
             """
         )
 
-        # SILHOUETTE & CLUSTERING
+        # Silhouette & Clustering
         df_clustered, best_k, best_score, sil_scores, k_range = run_clustering(df)
         colors = get_cluster_colors(df_clustered)
 
@@ -76,7 +74,7 @@ if uploaded_file:
         )
         st.stop()
 
-    # Hasil Silhouette
+    # Silhouette
     st.subheader("📌 Penentuan Jumlah Klaster Optimal (Silhouette)")
     st.write(f"**K terbaik: {best_k}**")
     st.write(f"**Silhouette Score: {best_score:.4f}**")
@@ -93,11 +91,11 @@ if uploaded_file:
     fig_sil = plot_silhouette(sil_scores, k_range)
     st.pyplot(fig_sil)
 
-    # Distribusi Jumlah Data per Klaster
+    # Distribusi Klaster
     st.subheader("📌 Distribusi Jumlah Data per Klaster")
 
     cluster_counts = df_clustered["cluster"].value_counts().sort_index()
-    fig_bar = plot_cluster_distribution(cluster_counts)
+    fig_bar = plot_cluster_distribution(cluster_counts, colors)
     st.pyplot(fig_bar)
 
     st.markdown(
@@ -108,19 +106,43 @@ if uploaded_file:
         """
     )
 
-    # Scatter Plot
+    # Scatter
     st.subheader("📌 Scatter Plot Clustering")
     fig_scatter = plot_scatter(df_clustered, colors)
     st.pyplot(fig_scatter)
+
+    st.markdown(
+        """
+        Scatter plot menampilkan pengelompokan kejadian gempa
+        berdasarkan kedalaman dan magnitudo,
+        sehingga pola distribusi data pada setiap klaster dapat diamati.
+        """
+    )
 
     # Peta Statis
     st.subheader("📌 Visualisasi Klaster di Peta Statis")
     fig_static = plot_map_static(df_clustered, colors)
     st.pyplot(fig_static)
 
+    st.markdown(
+        """
+        Peta statis menyajikan hasil clustering kejadian gempa
+        dalam bentuk visualisasi spasial di wilayah Indonesia.
+        """
+    )
+
     # Peta Interaktif
     st.subheader("📌 Peta Interaktif (Folium)")
     plot_map_interactive(df_clustered, colors)
+
+    st.markdown(
+        """
+        Peta interaktif menyajikan hasil clustering kejadian gempa
+        dalam bentuk visualisasi spasial.
+        Setiap titik mewakili satu kejadian gempa yang dikelompokkan
+        berdasarkan karakteristik kedalaman dan magnitudo.
+        """
+    )
 
 else:
     st.info("📤 Silakan upload file dataset untuk memulai analisis.")
