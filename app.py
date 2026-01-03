@@ -21,7 +21,9 @@ st.set_page_config(
     layout="wide"
 )
 
-st.title("🔎 Analisis Clustering Gempa di Indonesia")
+st.title(
+    "📊 Sistem Visualisasi dan Clustering Pola Gempa Bumi di Indonesia Menggunakan Metode K-Means"
+)
 
 
 uploaded_file = st.file_uploader(
@@ -38,7 +40,19 @@ if uploaded_file:
 
         st.success("✅ Dataset berhasil dimuat!")
 
-        # Elbow
+        st.subheader("📄 Pratinjau Dataset")
+
+        st.markdown(
+            f"""
+            Dataset yang digunakan dalam penelitian ini
+            terdiri dari **{df.shape[0]} data kejadian gempa bumi**.
+            Untuk memberikan gambaran awal terhadap karakteristik data,
+            ditampilkan **10 baris pertama** dari dataset.
+            """
+        )
+
+        st.dataframe(df.head(10), use_container_width=True)
+
         inertias, k_elbow = run_elbow(df)
 
         st.subheader("📌 Penentuan Jumlah Klaster (Metode Elbow)")
@@ -49,12 +63,11 @@ if uploaded_file:
             """
             Metode *Elbow* digunakan untuk mengamati perubahan nilai inertia (SSE)
             terhadap jumlah klaster.
-            Titik siku (elbow) menunjukkan jumlah klaster yang mulai memberikan
-            peningkatan performa yang tidak signifikan.
+            Titik siku menunjukkan jumlah klaster yang memberikan
+            peningkatan performa yang mulai melambat.
             """
         )
 
-        # Silhouette & Clustering
         df_clustered, best_k, best_score, sil_scores, k_range = run_clustering(df)
         colors = get_cluster_colors(df_clustered)
 
@@ -74,25 +87,21 @@ if uploaded_file:
         )
         st.stop()
 
-    # Silhouette
     st.subheader("📌 Penentuan Jumlah Klaster Optimal (Silhouette)")
-    st.write(f"**K terbaik: {best_k}**")
-    st.write(f"**Silhouette Score: {best_score:.4f}**")
 
     st.markdown(
         f"""
-        Berdasarkan evaluasi menggunakan metode *Silhouette*,
+        Evaluasi menggunakan metode *Silhouette* menunjukkan bahwa
         jumlah klaster optimal diperoleh pada **K = {best_k}**
-        dengan nilai *Silhouette Score* sebesar **{best_score:.4f}**,
-        yang menunjukkan kualitas pemisahan klaster yang cukup baik.
+        dengan nilai *Silhouette Score* sebesar **{best_score:.4f}**.
+        Nilai ini mengindikasikan kualitas pemisahan klaster yang baik.
         """
     )
 
     fig_sil = plot_silhouette(sil_scores, k_range)
     st.pyplot(fig_sil)
 
-    # Distribusi Klaster
-    st.subheader("📌 Distribusi Jumlah Data per Klaster")
+    st.subheader("📈 Distribusi Jumlah Data per Klaster")
 
     cluster_counts = df_clustered["cluster"].value_counts().sort_index()
     fig_bar = plot_cluster_distribution(cluster_counts, colors)
@@ -100,47 +109,48 @@ if uploaded_file:
 
     st.markdown(
         """
-        Diagram batang menunjukkan jumlah kejadian gempa
-        pada setiap klaster hasil clustering,
+        Diagram batang memperlihatkan jumlah kejadian gempa
+        pada masing-masing klaster hasil clustering,
         sehingga distribusi data antar klaster dapat dianalisis.
         """
     )
 
-    # Scatter
-    st.subheader("📌 Scatter Plot Clustering")
+    st.subheader("🔎 Scatter Plot Hasil Clustering")
+
     fig_scatter = plot_scatter(df_clustered, colors)
     st.pyplot(fig_scatter)
 
     st.markdown(
         """
-        Scatter plot menampilkan pengelompokan kejadian gempa
+        Scatter plot menggambarkan pengelompokan kejadian gempa
         berdasarkan kedalaman dan magnitudo,
-        sehingga pola distribusi data pada setiap klaster dapat diamati.
+        sehingga pola sebaran data pada setiap klaster dapat diamati.
         """
     )
 
-    # Peta Statis
-    st.subheader("📌 Visualisasi Klaster di Peta Statis")
+    st.subheader("🗺️ Visualisasi Klaster pada Peta Statis")
+
     fig_static = plot_map_static(df_clustered, colors)
     st.pyplot(fig_static)
 
     st.markdown(
         """
-        Peta statis menyajikan hasil clustering kejadian gempa
-        dalam bentuk visualisasi spasial di wilayah Indonesia.
+        Peta statis menyajikan persebaran spasial kejadian gempa
+        di wilayah Indonesia berdasarkan hasil clustering.
         """
     )
 
-    # Peta Interaktif
-    st.subheader("📌 Peta Interaktif (Folium)")
+    st.subheader("🗺️ Peta Interaktif Hasil Clustering")
+
     plot_map_interactive(df_clustered, colors)
 
     st.markdown(
         """
-        Peta interaktif menyajikan hasil clustering kejadian gempa
+        Peta interaktif menampilkan hasil clustering kejadian gempa
         dalam bentuk visualisasi spasial.
-        Setiap titik mewakili satu kejadian gempa yang dikelompokkan
-        berdasarkan karakteristik kedalaman dan magnitudo.
+        Setiap titik merepresentasikan satu kejadian gempa
+        yang dikelompokkan berdasarkan karakteristik kedalaman
+        dan magnitudo.
         """
     )
 
